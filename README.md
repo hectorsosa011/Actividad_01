@@ -1,71 +1,152 @@
 # ACTIVIDAD 1
 #### Calcular Coordenadas de Estaciones GPS de Monitoreo Continuo
-#### (FACES – DCTIG)
-#### Profesor: José David Cáceres
+Autor: Hector Sosa
+"""
+#----------------------------------------------------------------------------
+"Imptortacion"
+import os
+import math
+import statistics
 
-TABLA DE CONTENIDO
-==================
-- [Objetivo](#objetivo)
-- [Leer todos los archivos de la carpeta](#leer-archivos)
-- [Calcular las observaciones usando el programa teqc](#teqc)
-- [Extraer coordenadas de Observaciones](#extraer-coord)
-- [Convertir Coordenadas Geocentricas a Geodesicas](#convertir-coord)
-- [Para Entregar](#para-entregar)
+cwd = os.getcwd()
 
-Cada alumno desarrollará un código que sea capaz de mostrar la coordenada promedio de una estación GPS a partir de las observaciones diarias. Deberá copiar el repositorio base de la actividad y luego subir su trabajo en su propio repositorio en Github.
+as_files = []
 
-Objetivo
----------
-Utilizar Python para leer archivos y calcular la coordenada promedio en base a las observaciones diarias de una estación GPS de monitoreo continuo.
-Para el desarrollo de la actividad, el código deberá ser capaz de realizar las siguientes funciones:
+"Busqueda de archivos que terminen en .AS dentro de la carpeta de trabajo"
+#os.system('teqc -O.dec 30 +obs ' + name +' CRNO20201201_000000.AS')
 
-Leer todos los archivos de la carpeta
----------------------------------------
-Deberá crear una función que permita listar todos los archivos dentro de su carpeta de trabajo, filtrar los archivos correspondientes a las observaciones GPS (.AS) y agregar todos los archivos a una misma lista (AS_files)
-	
-Calcular las observaciones usando el programa teqc
---------------------------------------------------
-Teqc (pronunciado "tek") es un enfoque simple pero poderoso y unificado para resolver muchos problemas de preprocesamiento con datos de GPS, GLONASS, Galileo, SBAS, Beidou, QZSS e IRNSS, especialmente en formato RINEX o BINEX, Es un software libre desarrollado por UNAVCO.
-Para utilizar el programa necesitará ejecutar el siguiente comando desde la línea de comando (cmd):
+def asfiles(cwd):
+    for root, dirs, files in os.walk(cwd):
+        for file in files:
+            if file.endswith(".AS"):
+                as_files.append(file)
+                #print(file)
+                
+asfiles(cwd)
+#print(as_files)
+#----------------------------------------------------------------------------
+"Ejecución de teqc para los archivos.AS y creacion de archivos.o,"
+#def o_files(as_files):
+#    for file in as_files:         
+#        name_ofile = file.split('_')[0]+'.o'
+#        print(name_ofile)
+#        os.system('teqc -O.dec 30 +obs ' + name_ofile +' '+ file)
+#o_files(as_files)  
 
-*teqc -O.dec 30 +obs nuevo_archivo.o ARCHIVO_CRUDO.AS*
+#----------------------------------------------------------------------------
+"---- listas de prueba"
+Xcoord = []
+Ycoord = []
+Zcoord = []    
+"Lectura de la linea 10 de los archivos.o y el agregarlos a una lista"
+def xyz_coord(cwd):
+    for root, dirs, files in os.walk(cwd):
+        for file in files:
+            if file.endswith(".o"):
+                #print(file)
+                with open(file) as f:            
+                    lines= f.readlines()[9:10]
+                    for line in lines:
+                        #print(line)
+                        Xcoord.append((line.strip().split(" "))[0])
+                        Ycoord.append((line.strip().split(" "))[1])
+                        Zcoord.append((line.strip().split(" "))[3]) 
+                #print(file)
 
-donde:
-- teqc: Es el ejecutable del programa
-- -O.dec: es un parámetro que indica que va a tomar las mediciones cada XX segundos (en el ejemplo cada 30 segundos)
-- +obs: indica la creación de un nuevo archivo, se coloca el nombre que seleccionemos con la extensión “.o”
+xyz_coord(cwd)
 
-Para llamar teqc desde una terminal de Windows le será útil explorar la función os.system().
+#------------- PRUEBA INDIVIDUAL ----------- #creado como ejemplo para usar despues en la funcion def xyz_coord #
+#with open('CRNO20201201.o') as f:                        
+#    lines= f.readlines()[9:10]
+#    for line in lines:        
+#        Xcoord.append((line.strip().split(" "))[0])
+#        Ycoord.append((line.strip().split(" "))[1])
+#        Zcoord.append((line.strip().split(" "))[3])    
+#        #print(strip_line)
+#print("listas x y z")
+#print(Xcoord)
+#print(Ycoord)
+#print(Zcoord)
 
-Extraer coordenadas de Observaciones
-------------------------------------
-Extraer del archivo la información que indica la posición de la antena en coordenadas geocéntricas (X.Y,Z).
-Esta función deberá ser capaz nuevamente de listar cada archivo de observación “.o” que exista dentro del directorio de trabajo, leer el archivo y extraer los valores de las coordenadas.
-También deberá agregar cada valor de cada coordenada (x,y,z) a una lista respectiva que contenga cada componente (X_list, Y_list, Z_list)
+#----------------------------------------------------------------------------
+"Convetir lista cadena Xcoord a numeros float"
+X_list= list(map(float, Xcoord))
+#print(X_list)
 
-En el scope global de su código, le será útil calcular el valor promedio de cada uno de los componentes (X_mean, Y_mean, Z_mean), a partir de los valores almacenados en las listas respectivas.
+"Convetir lista cadena Ycoord a numeros float"
+Y_list= list(map(float, Ycoord))
+#print(Y_list)
 
-Convertir Coordenadas Geocentricas a Geodesicas
------------------------------------------------
-Para realizar los cálculos le serán conveniente los siguientes consejos:
-- Importa el módulo math para realizar los cálculos de seno (sin), coseno (cos), arcotangente (atan), raíz cuadrada (sqrt), potencia (pow). Por defecto todos los ángulos calculados en Python están expresados en radianes, por lo cual, para mostrar las coordenadas finales (φ, λ) deberás convertirlas a grados decimales (degrees)
-- Utilizando las fórmulas planteadas anteriormente:
-- Calcula la primera excentricidad (e)
-- Calcula la segunda excentricidad (e_prim)
-- Calcula el valor de p (p)
-- Calcula el valor de ϴ (theta)
-- Calcula el valor de φ (phi)
-- Calcula el valor de N (N)
-- Calcula el valor de h (h)
-- Calcula el valor de λ (lamb)
-- Convierte el valor de λ a grados (lamb_deg)
-- Convierte el valor de φ a grados (phi_deg)
+"Convetir lista cadena Zcoord a numeros float"
+Z_list= list(map(float, Zcoord))
+#print(Z_list)
 
-Una vez realizado la conversión de las coordenadas, deberá mostrarle al usuario las coordenadas finales.
+#----------------------------------------------------------------------------
+"Media de las coordenadas geocentricas"
+print ("Coordenadas geocentricas")
+Xmean = statistics.mean(X_list) 
+print("  X =", Xmean) 
+Ymean = statistics.mean(Y_list) 
+print("  Y =", Ymean) 
+Zmean = statistics.mean(Z_list)
+print("  Z =", Zmean)
 
-Para Entregar
-----------------
-Deberá agregar en el foro que se abrirá en el campus virtual, el enlace a su repositorio en Github, que contenga, además de los archivos originales proporcionados.
-1. El código desarrollado en Python.
-1. Los archivos de las observaciones (.o).
-1. Un archivo .csv con las coordenadas finales.
+#----------------------------------------------------------------------------
+" Transformación entre coord geocéntricas (X, Y, Z) a geodésicas (λ,φ,h) "
+a = 6378137
+b = 6356752.314
+
+#"---- Resultados, comprobacion de e, e_prim y P. -------"
+e = ((a**2 - b**2)/(a**2))
+#print(" e: ", e)
+
+e_prim = ((a**2 - b**2)/(b**2))
+#print(" e_prim: ",e_prim)
+
+p = math.sqrt((Xmean)**2 + (Ymean)**2)
+#print(" p: ",p)
+
+print("-----------------")
+print ("Coordenadas geodesicas")
+
+"----- Formulas -------"
+thetaR = math.atan((Zmean * a )/(p * b))
+
+#"---- Variables de Sin y Cos para theta    -------"
+thetaRS = (math.sin(thetaR))**3
+thetaRC = (math.cos(thetaR))**3
+
+#"---- Formula para encontrar phi  -------"
+phi = math.atan(((Zmean + e_prim * b * thetaRS )/(p - e * a * thetaRC)))
+print("  φ =", math.degrees(phi)) # Resultado en grados
+
+#"---- Formula para encontrar N   -------"
+phiRC = (math.sin(phi))**2 # phi en radianes para Sin
+N = ( a / math.sqrt( (1 - e * phiRC)))
+
+#"---- Formula para encontrar landa   -------"
+landa = math.degrees(math.atan(Ymean/Xmean))
+print("  λ =",landa)
+
+#"---- Formula para encontrar h   -------"
+phiRC = math.cos(phi) #phi en radianes para Cos
+h =  ( p / (phiRC))-N
+print("  h =",h)
+
+----------------------------------------------------------------------------------------
+RESULTADOS FINALES COPIADOS DE LA CONSOLA
+Coordenadas geocentricas
+  X = 408078.35217419354
+  Y = -6158372.410980646
+  Z = 1605162.5571483872
+-----------------
+Coordenadas geodesicas
+  φ = 14.67235840404141
+  λ = -86.20889513959887
+  h = 419.96901975385845
+#----------------------------------------------------------------------------
+"--- Creacion de archivo.csv agregando los resultados obtenidos-en la consola-----"
+"--- Creacion de archivo.csv agregando los resultados obtenidos-en la consola-----"
+with open('Resultados_Coord.csv', 'w') as archivo:
+    archivo.write('Coord_X,Coord_y,Coord_z,Phi_latitud,Landa_longitud,Altura\n')
+    archivo.write('408078.35217419354,-6158372.410980646,1605162.5571483872,14.67235840404141,-86.20889513959887,419.96901975385845')
