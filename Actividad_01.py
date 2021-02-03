@@ -2,6 +2,7 @@
 """
 Spyder Editor
 
+Autor: Hector Sosa
 Actividad_01 
 
 """
@@ -134,3 +135,9 @@ print("  λ =",landa)
 phiRC = math.cos(phi) #phi en radianes para Cos
 h =  ( p / (phiRC))-N
 print("  h =",h)
+
+#----------------------------------------------------------------------------
+"--- Creacion de archivo.csv agregando los resultados obtenidos-en la consola-----"
+with open('Resultados_Coord.csv', 'w') as archivo:
+    archivo.write('Coord_X,Coord_y,Coord_z,Phi_latitud,Landa_longitud,Altura\n')
+    archivo.write('408078.35217419354,-6158372.410980646,1605162.5571483872,14.67235840404141,-86.20889513959887,419.96901975385845')
