@@ -5,7 +5,7 @@ Spyder Editor
 Actividad_01 
 
 """
-
+#----------------------------------------------------------------------------
 import os
 import math
 import statistics
@@ -14,22 +14,20 @@ cwd = os.getcwd()
 
 as_files = []
 
-Xcoord = []
-Ycoord = []
-Zcoord = []
+"Busqueda de archivos que terminen en .AS dentro de la carpeta de trabajo"
 #os.system('teqc -O.dec 30 +obs ' + name +' CRNO20201201_000000.AS')
-
 
 def asfiles(cwd):
     for root, dirs, files in os.walk(cwd):
         for file in files:
             if file.endswith(".AS"):
                 as_files.append(file)
-                print(file)
+                #print(file)
                 
-#asfiles(cwd)
+asfiles(cwd)
 #print(as_files)
-
+#----------------------------------------------------------------------------
+"Ejecución de teqc para los archivos.AS y creacion de archivos.o,"
 #def o_files(as_files):
 #    for file in as_files:         
 #        name_ofile = file.split('_')[0]+'.o'
@@ -37,8 +35,12 @@ def asfiles(cwd):
 #        os.system('teqc -O.dec 30 +obs ' + name_ofile +' '+ file)
 #o_files(as_files)  
 
-#for root, dirs, files in os.walk(cwd):
-
+#----------------------------------------------------------------------------
+"---- listas de prueba"
+Xcoord = []
+Ycoord = []
+Zcoord = []    
+"Lectura de la linea 10 de los archivos.o y el agregarlos a una lista"
 def xyz_coord(cwd):
     for root, dirs, files in os.walk(cwd):
         for file in files:
@@ -63,32 +65,72 @@ xyz_coord(cwd)
 #        Ycoord.append((line.strip().split(" "))[1])
 #        Zcoord.append((line.strip().split(" "))[3])    
 #        #print(strip_line)
+#print("listas x y z")
+#print(Xcoord)
+#print(Ycoord)
+#print(Zcoord)
 
-print(Xcoord)
-print(Ycoord)
-print(Zcoord)
+#----------------------------------------------------------------------------
+"Convetir lista cadena Xcoord a numeros float"
+X_list= list(map(float, Xcoord))
+#print(X_list)
 
-#Xmean = statistics.mean(Xcoord)
-#print (Xmean)
+"Convetir lista cadena Ycoord a numeros float"
+Y_list= list(map(float, Ycoord))
+#print(Y_list)
 
+"Convetir lista cadena Zcoord a numeros float"
+Z_list= list(map(float, Zcoord))
+#print(Z_list)
 
-#print(Xcoordd)
+#----------------------------------------------------------------------------
+"Media de las coordenadas geocentricas"
+print ("Coordenadas geocentricas")
+Xmean = statistics.mean(X_list) 
+print("  X =", Xmean) 
+Ymean = statistics.mean(Y_list) 
+print("  Y =", Ymean) 
+Zmean = statistics.mean(Z_list)
+print("  Z =", Zmean)
 
-#Xcoordd = ['408079.7292', '408078.8105', '408078.8839', '408078.5278', '408078.0667', '408078.7420', '408078.2101', '408080.3641', '408078.3534', '408078.2339', '408077.4825', '408077.8019', '408079.1196', '408080.2453', '408078.9651', '408077.4631', '408079.7197', '408076.9984', '408074.7555', '408074.6207', '408078.1237', '408079.4599', '408079.1861', '408080.6267', '408078.4762', '408077.6788', '408078.7968', '408078.5218', '408077.8401', '408077.3832', '408077.7307']
+#----------------------------------------------------------------------------
+" Transformación entre coord geocéntricas (X, Y, Z) a geodésicas (λ,φ,h) "
+a = 6378137
+b = 6356752.314
 
-#res = [float(sub.split('.')) for sub in Xcoordd] 
-  
-# print result 
-#print("The list after Extracting numbers : " + str(res))
+#"---- Resultados, comprobacion de e, e_prim y P. -------"
+e = ((a**2 - b**2)/(a**2))
+#print(" e: ", e)
 
-new_l = list(map(float, Xcoord))
+e_prim = ((a**2 - b**2)/(b**2))
+#print(" e_prim: ",e_prim)
 
-print(new_l)
+p = math.sqrt((Xmean)**2 + (Ymean)**2)
+#print(" p: ",p)
 
+print("-----------------")
+print ("Coordenadas geodesicas")
 
-x = statistics.mean(new_l) 
-  
-# Printing the mean 
-#print("Mean is :", x) 
+"----- Formulas -------"
+thetaR = math.atan((Zmean * a )/(p * b))
 
-#lol
+#"---- Variables de Sin y Cos para theta    -------"
+thetaRS = (math.sin(thetaR))**3
+thetaRC = (math.cos(thetaR))**3
+
+#"---- Formula para encontrar phi  -------"
+phi = math.atan(((Zmean + e_prim * b * thetaRS )/(p - e * a * thetaRC)))
+print("  φ =", math.degrees(phi)) # Resultado en grados
+
+#"---- Formula para encontrar N   -------"
+phiRC = (math.sin(phi))**2 # phi en radianes para Sin
+N = ( a / math.sqrt( (1 - e * phiRC)))
+
+#"---- Formula para encontrar landa   -------"
+landa = math.degrees(math.atan(Ymean/Xmean))
+print("  λ =",landa)
+
+#"---- Formula para encontrar h   -------"
+phiRC = math.cos(phi) #phi en radianes para Cos
+h =  ( p / (phiRC))-N
+print("  h =",h)
